@@ -6,197 +6,374 @@
   <title>Circle Containment Visualizer</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --panel2: #1f2937;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --accent: #60a5fa;
-      --good: #34d399;
-      --warn: #fbbf24;
-      --bad: #f87171;
+      --bg: #0b1020;
+      --panel: #121a2c;
+      --panel-soft: #182238;
+      --border: rgba(148, 163, 184, 0.16);
+      --text: #e8edf7;
+      --muted: #9aa8bf;
+      --accent: #67b3ff;
+      --success: #2dd4bf;
+      --fail: rgba(255,255,255,0.35);
+      --safe: rgba(45, 212, 191, 0.18);
+      --safe-line: rgba(45, 212, 191, 0.95);
+      --center: #fbbf24;
+      --heat: #67b3ff;
     }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Inter, system-ui, Arial, sans-serif;
-      background: linear-gradient(180deg, #020617, #0f172a);
+      background: linear-gradient(180deg, #060a14 0%, #0b1020 100%);
       color: var(--text);
     }
+
     .wrap {
+      min-height: 100vh;
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: 16px;
-      min-height: 100vh;
       padding: 16px;
     }
+
     .panel {
-      background: rgba(17, 24, 39, 0.95);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      border-radius: 16px;
+      background: rgba(18, 26, 44, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+    }
+
+    .sidebar {
       padding: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      overflow: auto;
     }
-    h1 { font-size: 1.3rem; margin: 0 0 8px 0; }
-    h2 { font-size: 1rem; margin: 18px 0 8px 0; color: var(--accent); }
-    p, li { color: var(--muted); line-height: 1.45; }
-    .control { margin: 10px 0 14px; }
-    .control label {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.95rem; margin-bottom: 6px;
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.32rem;
     }
-    .control input[type="range"] { width: 100%; }
-    .row { display: flex; gap: 8px; }
-    .row > * { flex: 1; }
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
+
+    h2 {
+      margin: 18px 0 10px;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0 0 10px;
+    }
+
+    .callout {
+      background: rgba(103, 179, 255, 0.08);
+      border: 1px solid rgba(103, 179, 255, 0.18);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #dbe7fb;
+      border-radius: 12px;
       padding: 10px 12px;
-      font-weight: 600;
-      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 10px;
     }
-    button.secondary { background: #334155; }
+
+    .controls {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .control .name { color: var(--text); }
+    .control .val { color: var(--accent); font-variant-numeric: tabular-nums; }
+    .control input[type="range"] { width: 100%; }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.04s ease, opacity 0.15s ease;
+    }
+
+    button:active { transform: translateY(1px); }
+    .primary { background: var(--accent); color: #041222; }
+    .secondary { background: #2a364f; color: var(--text); }
+
     .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 14px;
     }
+
     .stat {
-      background: rgba(31,41,55,0.8);
+      background: var(--panel-soft);
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
-      padding: 10px;
-      border: 1px solid rgba(148,163,184,0.12);
+      padding: 12px;
     }
-    .stat .label { color: var(--muted); font-size: 0.85rem; }
-    .stat .value { font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 6px;
+    }
+
+    .stat .value {
+      font-weight: 800;
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .note {
+      margin-top: 14px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
     .canvas-panel {
       position: relative;
       overflow: hidden;
-      padding: 0;
+      min-height: calc(100vh - 32px);
     }
-    canvas { display: block; width: 100%; height: 100%; }
-    .legend {
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .overlay {
       position: absolute;
+      z-index: 2;
+      background: rgba(6, 10, 20, 0.84);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(6px);
+      border-radius: 14px;
+      padding: 12px 14px;
+      max-width: 380px;
+    }
+
+    .legend {
       left: 16px;
       top: 16px;
-      background: rgba(2,6,23,0.82);
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(148,163,184,0.18);
-      backdrop-filter: blur(8px);
-      font-size: 0.9rem;
     }
-    .legend div { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-    .swatch { width: 14px; height: 14px; border-radius: 999px; display: inline-block; }
-    .footer {
-      margin-top: 14px;
-      font-size: 0.9rem;
+
+    .legend-title, .status-title {
+      font-weight: 800;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 9px 0;
       color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.35;
     }
-    .formula {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: rgba(2,6,23,0.6);
-      padding: 10px; border-radius: 10px;
-      color: #cbd5e1; font-size: 0.9rem;
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      flex: 0 0 14px;
+      border: 1px solid rgba(255,255,255,0.25);
+      margin-top: 2px;
     }
-    @media (max-width: 920px) {
+
+    .status {
+      right: 16px;
+      top: 16px;
+    }
+
+    .status p {
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+    }
+
+    .status .big {
+      color: var(--text);
+      font-weight: 800;
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    .status .small {
+      margin-top: 8px;
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 960px) {
       .wrap { grid-template-columns: 1fr; }
-      .canvas-panel { min-height: 60vh; }
+      .canvas-panel { min-height: 68vh; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="panel">
-      <h1>Circle Containment Visualizer</h1>
-      <p>
-        This shows the probability that a randomly located circle of radius <b>r</b>
-        is fully inside at least one of <b>N</b> possible locations of another circle of radius <b>R</b>.
-      </p>
+    <div class="panel sidebar">
+      <h1>Probability of Circle Containment Under Positional Uncertainty</h1>
+      <p>A circle has a center whose position follows a 2D normal (Gaussian) distribution. Another circle can be placed at one of <b>N</b> equally spaced positions on a ring.</p>
+      <p>This simulation estimates the probability that the randomly positioned circle would be fully contained within one of those possible positions.</p>
+
+      <div class="callout">
+        <strong>What counts as a success?</strong>
+        <div class="formula">Success if min<sub>k</sub> ||X - c<sub>k</sub>|| ≤ R - r</div>
+        <p style="margin-top:10px;">Here, <b>X</b> is the sampled center of the randomly positioned circle, and <b>c<sub>k</sub></b> is one allowed center for the other circle.</p>
+        <p style="margin-top:10px;">Each allowed position creates a green <b>containment region</b> of radius <b>R − r</b>. If a sampled center lands inside any green region, full containment occurs.</p>
+      </div>
 
       <h2>Geometry</h2>
-      <div class="control">
-        <label><span>Small circle radius r</span><span id="rVal"></span></label>
-        <input id="r" type="range" min="0.1" max="2.5" step="0.05" value="0.8">
-      </div>
-      <div class="control">
-        <label><span>Large circle radius R</span><span id="RVal"></span></label>
-        <input id="R" type="range" min="0.2" max="4.5" step="0.05" value="2.1">
-      </div>
-      <div class="control">
-        <label><span>Ring radius a</span><span id="aVal"></span></label>
-        <input id="a" type="range" min="0" max="7" step="0.1" value="3.5">
-      </div>
-      <div class="control">
-        <label><span>Number of allowed positions N</span><span id="NVal"></span></label>
-        <input id="N" type="range" min="1" max="24" step="1" value="8">
+      <div class="controls">
+        <div class="control">
+          <label><span class="name">Radius r of randomly positioned circle</span><span class="val" id="rVal"></span></label>
+          <input id="r" type="range" min="0.1" max="2.5" step="0.05" value="0.8">
+        </div>
+        <div class="control">
+          <label><span class="name">Radius R of allowed-position circle</span><span class="val" id="RVal"></span></label>
+          <input id="R" type="range" min="0.2" max="4.5" step="0.05" value="2.1">
+        </div>
+        <div class="control">
+          <label><span class="name">Ring radius a</span><span class="val" id="aVal"></span></label>
+          <input id="a" type="range" min="0" max="7" step="0.1" value="3.5">
+        </div>
+        <div class="control">
+          <label><span class="name">Allowed positions N</span><span class="val" id="NVal"></span></label>
+          <input id="N" type="range" min="1" max="24" step="1" value="8">
+        </div>
       </div>
 
       <h2>Random center distribution</h2>
-      <div class="control">
-        <label><span>Mean x (μx)</span><span id="muxVal"></span></label>
-        <input id="mux" type="range" min="-4" max="4" step="0.1" value="0">
-      </div>
-      <div class="control">
-        <label><span>Mean y (μy)</span><span id="muyVal"></span></label>
-        <input id="muy" type="range" min="-4" max="4" step="0.1" value="0">
-      </div>
-      <div class="control">
-        <label><span>σx</span><span id="sigxVal"></span></label>
-        <input id="sigx" type="range" min="0.2" max="4" step="0.1" value="1.2">
-      </div>
-      <div class="control">
-        <label><span>σy</span><span id="sigyVal"></span></label>
-        <input id="sigy" type="range" min="0.2" max="4" step="0.1" value="1.2">
+      <div class="controls">
+        <div class="control">
+          <label><span class="name">Mean x (μx)</span><span class="val" id="muxVal"></span></label>
+          <input id="mux" type="range" min="-4" max="4" step="0.1" value="0">
+        </div>
+        <div class="control">
+          <label><span class="name">Mean y (μy)</span><span class="val" id="muyVal"></span></label>
+          <input id="muy" type="range" min="-4" max="4" step="0.1" value="0">
+        </div>
+        <div class="control">
+          <label><span class="name">σx</span><span class="val" id="sigxVal"></span></label>
+          <input id="sigx" type="range" min="0.2" max="4" step="0.1" value="1.2">
+        </div>
+        <div class="control">
+          <label><span class="name">σy</span><span class="val" id="sigyVal"></span></label>
+          <input id="sigy" type="range" min="0.2" max="4" step="0.1" value="1.2">
+        </div>
       </div>
 
-      <div class="row">
-        <button id="runBtn">Run Monte Carlo</button>
-        <button id="resampleBtn" class="secondary">Reseed Samples</button>
+      <div class="button-row" style="grid-template-columns: 1fr;">
+        <button id="runBtn" class="primary">Run Monte Carlo</button>
       </div>
 
       <div class="stats">
-        <div class="stat">
-          <div class="label">Safe-zone radius</div>
-          <div class="value" id="safeVal">—</div>
-        </div>
         <div class="stat">
           <div class="label">Estimated probability</div>
           <div class="value" id="probVal">—</div>
         </div>
         <div class="stat">
-          <div class="label">Adjacent center spacing</div>
+          <div class="label">Successes / samples</div>
+          <div class="value" id="countVal">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Containment-region radius (R − r)</div>
+          <div class="value" id="safeVal">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Adjacent allowed-center spacing</div>
           <div class="value" id="spacingVal">—</div>
         </div>
         <div class="stat">
-          <div class="label">Disks overlap?</div>
+          <div class="label">Containment regions overlap?</div>
           <div class="value" id="overlapVal">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Monte Carlo runs</div>
+          <div class="value" id="runsVal">0</div>
         </div>
       </div>
 
-      <h2>What is being checked?</h2>
-      <div class="formula">A random center X is a success if min_k ||X - c_k|| ≤ R - r</div>
-      <p class="footer">
-        The green disks are the “safe zones” for the center of the small circle. If the center lands in any safe zone, the small circle is fully contained in that possible large-circle location.
-      </p>
+      <p class="note">Each dot on the plot is one simulated location of the random circle’s center. Green dots count as successes because they land inside at least one containment region.</p>
     </div>
 
     <div class="panel canvas-panel">
-      <div class="legend">
-        <div><span class="swatch" style="background:#ffffff"></span> origin</div>
-        <div><span class="swatch" style="background:#22c55e"></span> containment safe zones (radius R − r)</div>
-        <div><span class="swatch" style="background:#60a5fa"></span> Gaussian probability field</div>
-        <div><span class="swatch" style="background:#fbbf24"></span> large-circle centers</div>
-        <div><span class="swatch" style="background:#f87171"></span> sampled random centers</div>
+      <div class="overlay legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgba(103,179,255,0.85);"></span>
+          <span><strong>Blue heatmap</strong> — the likelihood of the random circle’s center under the Gaussian distribution. Brighter areas are more likely.</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgba(251,191,36,0.9);"></span>
+          <span><strong>Yellow points</strong> — the allowed center locations for the second circle, placed at equally spaced positions on the ring.</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.45);"></span>
+          <span><strong>Yellow circle outlines</strong> — the actual possible positions of the second circle.</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgba(45,212,191,0.65);"></span>
+          <span><strong>Green regions</strong> — the locations where the random circle’s center must fall for full containment to occur.</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgb(45,212,191);"></span>
+          <span><strong>Green dots</strong> — simulated center locations where containment occurs.</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: rgba(255,255,255,0.35);"></span>
+          <span><strong>White dots</strong> — simulated center locations where containment does not occur.</span>
+        </div>
       </div>
+
+      <div class="overlay status">
+        <div class="status-title">What this simulation is doing</div>
+        <p><strong>Step 1:</strong> Draw many possible center locations for the randomly positioned circle from the Gaussian distribution.</p>
+        <p><strong>Step 2:</strong> For each sampled center, check whether it falls inside at least one green containment region.</p>
+        <p class="big">Estimated probability = successful sampled centers / total sampled centers</p>
+        <p class="small">The yellow circles show the actual possible positions of the second circle. The green regions are smaller because the random circle’s center must stay within distance <b>R − r</b> of an allowed center to fit completely inside.</p>
+      </div>
+
       <canvas id="canvas"></canvas>
     </div>
   </div>
 
   <script>
+    const SAMPLE_COUNT = 3500;
+
     const controls = {
       r: document.getElementById('r'),
       R: document.getElementById('R'),
@@ -216,22 +393,31 @@
       mux: document.getElementById('muxVal'),
       muy: document.getElementById('muyVal'),
       sigx: document.getElementById('sigxVal'),
-      sigy: document.getElementById('sigyVal'),
+      sigy: document.getElementById('sigyVal')
     };
 
-    const safeVal = document.getElementById('safeVal');
-    const probVal = document.getElementById('probVal');
-    const spacingVal = document.getElementById('spacingVal');
-    const overlapVal = document.getElementById('overlapVal');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let sampleSeed = 1;
+    const probVal = document.getElementById('probVal');
+    const countVal = document.getElementById('countVal');
+    const safeVal = document.getElementById('safeVal');
+    const spacingVal = document.getElementById('spacingVal');
+    const overlapVal = document.getElementById('overlapVal');
+    const runsVal = document.getElementById('runsVal');
+    const runBtn = document.getElementById('runBtn');
+    
+    let seed = 123456789;
+    let mcRuns = 0;
+    let latestResults = null;
+    let lastParamSignature = '';
 
     function updateLabels() {
-      Object.keys(controls).forEach(k => labels[k].textContent = Number(controls[k].value).toFixed(k === 'N' ? 0 : 2));
+      for (const [key, el] of Object.entries(controls)) {
+        labels[key].textContent = Number(el.value).toFixed(key === 'N' ? 0 : 2);
+      }
     }
 
-    function params() {
+    function getParams() {
       return {
         r: +controls.r.value,
         R: +controls.R.value,
@@ -240,7 +426,7 @@
         mux: +controls.mux.value,
         muy: +controls.muy.value,
         sigx: +controls.sigx.value,
-        sigy: +controls.sigy.value,
+        sigy: +controls.sigy.value
       };
     }
 
@@ -252,8 +438,8 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function xorshift32(seed) {
-      let x = seed || 123456789;
+    function xorshift32(s) {
+      let x = s || 123456789;
       return function() {
         x ^= x << 13;
         x ^= x >>> 17;
@@ -269,140 +455,210 @@
       return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
     }
 
-    function worldBounds(p) {
-      const margin = 1.5;
-      const maxR = Math.max(p.a + p.R + margin, Math.abs(p.mux) + 4*p.sigx + margin, Math.abs(p.muy) + 4*p.sigy + margin, 4);
-      return { minX: -maxR, maxX: maxR, minY: -maxR, maxY: maxR };
-    }
-
-    function makeTransform(bounds, width, height) {
-      const sx = width / (bounds.maxX - bounds.minX);
-      const sy = height / (bounds.maxY - bounds.minY);
-      const s = Math.min(sx, sy) * 0.92;
-      const ox = width / 2;
-      const oy = height / 2;
-      return {
-        toCanvas(x, y) {
-          return [ox + x * s, oy - y * s];
-        },
-        toScale(v) {
-          return v * s;
-        }
-      };
+    function circleCenters(p) {
+      const arr = [];
+      for (let k = 0; k < p.N; k++) {
+        const theta = 2 * Math.PI * k / p.N;
+        arr.push({ x: p.a * Math.cos(theta), y: p.a * Math.sin(theta) });
+      }
+      return arr;
     }
 
     function gaussianPdf(x, y, p) {
       const zx = (x - p.mux) / p.sigx;
       const zy = (y - p.muy) / p.sigy;
-      return Math.exp(-0.5 * (zx*zx + zy*zy)) / (2 * Math.PI * p.sigx * p.sigy);
+      return Math.exp(-0.5 * (zx * zx + zy * zy)) / (2 * Math.PI * p.sigx * p.sigy);
     }
 
-    function circleCenters(p) {
-      const centers = [];
-      for (let k = 0; k < p.N; k++) {
-        const t = 2 * Math.PI * k / p.N;
-        centers.push({ x: p.a * Math.cos(t), y: p.a * Math.sin(t) });
-      }
-      return centers;
-    }
-
-    function minDistToCenters(x, y, centers) {
+    function nearestDistance(x, y, centers) {
       let best = Infinity;
       for (const c of centers) {
-        const dx = x - c.x;
-        const dy = y - c.y;
-        const d = Math.hypot(dx, dy);
+        const d = Math.hypot(x - c.x, y - c.y);
         if (d < best) best = d;
       }
       return best;
     }
 
-    function draw() {
-      updateLabels();
-      resizeCanvas();
-      const p = params();
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      const bounds = worldBounds(p);
-      const T = makeTransform(bounds, width, height);
+    function worldBounds(p) {
+      const spread = Math.max(4 * p.sigx, 4 * p.sigy);
+      const radial = p.a + p.R + 1.8;
+      const extent = Math.max(4.5, Math.abs(p.mux) + spread + 1.2, Math.abs(p.muy) + spread + 1.2, radial);
+      return { minX: -extent, maxX: extent, minY: -extent, maxY: extent };
+    }
+
+    function makeTransform(bounds, width, height) {
+      const sx = width / (bounds.maxX - bounds.minX);
+      const sy = height / (bounds.maxY - bounds.minY);
+      const scale = Math.min(sx, sy) * 0.92;
+      const ox = width / 2;
+      const oy = height / 2;
+      return {
+        toCanvas(x, y) { return [ox + x * scale, oy - y * scale]; },
+        toScale(v) { return v * scale; }
+      };
+    }
+
+    function simulate(p, forceNew = false) {
+      const signature = JSON.stringify(p);
+      if (signature !== lastParamSignature) {
+        mcRuns = 0;
+        latestResults = null;
+        lastParamSignature = signature;
+      }
+
+      if (!forceNew && latestResults) return latestResults;
+
+      seed = (seed + 98765431) >>> 0;
+      const rng = xorshift32(seed);
       const centers = circleCenters(p);
       const safe = p.R - p.r;
+      const points = [];
+      let hits = 0;
 
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#020617';
-      ctx.fillRect(0, 0, width, height);
+      for (let i = 0; i < SAMPLE_COUNT; i++) {
+        const x = p.mux + p.sigx * randn(rng);
+        const y = p.muy + p.sigy * randn(rng);
+        const d = nearestDistance(x, y, centers);
+        const hit = safe >= 0 && d <= safe;
+        if (hit) hits += 1;
+        points.push({ x, y, hit });
+      }
 
-      // Gaussian heatmap
+      mcRuns += 1;
+      latestResults = { points, hits, safe, centers };
+      return latestResults;
+    }
+
+    function drawGaussianHeatmap(p, bounds, width, height) {
       const res = Math.max(120, Math.floor(Math.min(width, height) / 4));
       const img = ctx.createImageData(res, res);
-      let maxPdf = gaussianPdf(p.mux, p.muy, p);
+      const maxPdf = gaussianPdf(p.mux, p.muy, p);
+
       for (let j = 0; j < res; j++) {
         for (let i = 0; i < res; i++) {
           const x = bounds.minX + (i / (res - 1)) * (bounds.maxX - bounds.minX);
           const y = bounds.maxY - (j / (res - 1)) * (bounds.maxY - bounds.minY);
-          const pdf = gaussianPdf(x, y, p) / maxPdf;
+          const ratio = gaussianPdf(x, y, p) / maxPdf;
           const idx = (j * res + i) * 4;
-          img.data[idx] = 96;
-          img.data[idx + 1] = 165;
-          img.data[idx + 2] = 250;
-          img.data[idx + 3] = Math.round(190 * Math.pow(pdf, 0.55));
+          img.data[idx] = 103;
+          img.data[idx + 1] = 179;
+          img.data[idx + 2] = 255;
+          img.data[idx + 3] = Math.round(185 * Math.pow(ratio, 0.58));
         }
       }
+
       const off = document.createElement('canvas');
-      off.width = res; off.height = res;
+      off.width = res;
+      off.height = res;
       off.getContext('2d').putImageData(img, 0, 0);
       ctx.save();
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = 0.72;
       ctx.drawImage(off, 0, 0, width, height);
       ctx.restore();
+    }
+
+    function updateStats(p, results) {
+      const safe = results.safe;
+      const prob = safe < 0 ? 0 : results.hits / SAMPLE_COUNT;
+      const spacing = p.N === 1 ? 0 : 2 * p.a * Math.sin(Math.PI / p.N);
+      const overlap = p.N > 1 && safe > 0 && spacing < 2 * safe;
+
+      probVal.textContent = (100 * prob).toFixed(2) + '%';
+      countVal.textContent = `${results.hits.toLocaleString()} / ${SAMPLE_COUNT.toLocaleString()}`;
+      safeVal.textContent = safe.toFixed(2);
+      spacingVal.textContent = spacing.toFixed(2);
+      overlapVal.textContent = overlap ? 'Yes' : 'No';
+      runsVal.textContent = String(mcRuns);
+      runBtn.textContent = 'Run Monte Carlo';
+    }
+
+    function drawScene(forceNew = false) {
+      updateLabels();
+      resizeCanvas();
+      const p = getParams();
+      const results = simulate(p, forceNew);
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const bounds = worldBounds(p);
+      const T = makeTransform(bounds, width, height);
+      const safe = results.safe;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#060a14';
+      ctx.fillRect(0, 0, width, height);
+
+      drawGaussianHeatmap(p, bounds, width, height);
 
       // axes
-      ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
       ctx.lineWidth = 1;
-      let [x0a, y0a] = T.toCanvas(bounds.minX, 0), [x0b, y0b] = T.toCanvas(bounds.maxX, 0);
-      ctx.beginPath(); ctx.moveTo(x0a, y0a); ctx.lineTo(x0b, y0b); ctx.stroke();
-      let [y1aX, y1aY] = T.toCanvas(0, bounds.minY), [y1bX, y1bY] = T.toCanvas(0, bounds.maxY);
-      ctx.beginPath(); ctx.moveTo(y1aX, y1aY); ctx.lineTo(y1bX, y1bY); ctx.stroke();
-
-      // ring path for possible large-circle centers
-      const [ox, oy] = T.toCanvas(0, 0);
-      ctx.strokeStyle = 'rgba(251,191,36,0.35)';
-      ctx.lineWidth = 2;
+      const [ax1, ay] = T.toCanvas(bounds.minX, 0);
+      const [ax2] = T.toCanvas(bounds.maxX, 0);
       ctx.beginPath();
-      ctx.arc(ox, oy, T.toScale(p.a), 0, Math.PI * 2);
+      ctx.moveTo(ax1, ay);
+      ctx.lineTo(ax2, ay);
+      ctx.stroke();
+      const [bx, by1] = T.toCanvas(0, bounds.minY);
+      const [, by2] = T.toCanvas(0, bounds.maxY);
+      ctx.beginPath();
+      ctx.moveTo(bx, by1);
+      ctx.lineTo(bx, by2);
       ctx.stroke();
 
-      // safe zones
+      // containment regions
       if (safe > 0) {
-        centers.forEach(c => {
+        for (const c of results.centers) {
           const [cx, cy] = T.toCanvas(c.x, c.y);
-          ctx.fillStyle = 'rgba(34,197,94,0.18)';
-          ctx.strokeStyle = 'rgba(34,197,94,0.85)';
+          ctx.fillStyle = 'rgba(45, 212, 191, 0.18)';
+          ctx.strokeStyle = 'rgba(45, 212, 191, 0.95)';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.arc(cx, cy, T.toScale(safe), 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-        });
+        }
       }
 
-      // possible large circles themselves
-      centers.forEach(c => {
+      // actual possible circle positions and allowed centers
+      for (const c of results.centers) {
         const [cx, cy] = T.toCanvas(c.x, c.y);
-        ctx.strokeStyle = 'rgba(251,191,36,0.22)';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(251,191,36,0.28)';
+        ctx.lineWidth = 1.35;
         ctx.beginPath();
         ctx.arc(cx, cy, T.toScale(p.R), 0, Math.PI * 2);
         ctx.stroke();
 
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = 'rgb(251,191,36)';
         ctx.beginPath();
         ctx.arc(cx, cy, 4, 0, Math.PI * 2);
         ctx.fill();
-      });
+      }
 
-      // mean marker
+      // Monte Carlo points: failures first, successes on top
+      for (const pt of results.points) {
+        if (pt.hit) continue;
+        const [cx, cy] = T.toCanvas(pt.x, pt.y);
+        ctx.fillStyle = 'rgba(255,255,255,0.30)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (const pt of results.points) {
+        if (!pt.hit) continue;
+        const [cx, cy] = T.toCanvas(pt.x, pt.y);
+        ctx.fillStyle = 'rgba(45,212,191,0.92)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // origin and mean markers
+      const [ox, oy] = T.toCanvas(0, 0);
       const [mx, my] = T.toCanvas(p.mux, p.muy);
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(ox, oy, 3.8, 0, Math.PI * 2);
+      ctx.fill();
       ctx.strokeStyle = 'white';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -410,74 +666,21 @@
       ctx.moveTo(mx, my - 6); ctx.lineTo(mx, my + 6);
       ctx.stroke();
 
-      // origin marker
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(ox, oy, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // sample points + Monte Carlo estimate
-      const rng = xorshift32(sampleSeed);
-      const M = 3000;
-      let hits = 0;
-      const pts = [];
-      for (let i = 0; i < M; i++) {
-        const x = p.mux + p.sigx * randn(rng);
-        const y = p.muy + p.sigy * randn(rng);
-        const hit = safe >= 0 && minDistToCenters(x, y, centers) <= safe;
-        if (hit) hits++;
-        if (i < 1000) pts.push({x, y, hit});
-      }
-      pts.forEach(pt => {
-        const [cx, cy] = T.toCanvas(pt.x, pt.y);
-        ctx.fillStyle = pt.hit ? 'rgba(52,211,153,0.85)' : 'rgba(248,113,113,0.65)';
-        ctx.beginPath();
-        ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // highlight one successful small circle if any
-      const success = pts.find(p0 => p0.hit);
-      if (success) {
-        let bestIdx = 0, bestD = Infinity;
-        centers.forEach((c, i) => {
-          const d = Math.hypot(success.x - c.x, success.y - c.y);
-          if (d < bestD) { bestD = d; bestIdx = i; }
-        });
-        const c = centers[bestIdx];
-        const [sx, sy] = T.toCanvas(success.x, success.y);
-        const [ccx, ccy] = T.toCanvas(c.x, c.y);
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-        ctx.setLineDash([6, 6]);
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ccx, ccy); ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(sx, sy, T.toScale(p.r), 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      // annotations
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
       ctx.font = '13px Inter, Arial, sans-serif';
       ctx.fillText('origin', ox + 8, oy - 8);
       ctx.fillText('μ', mx + 8, my - 8);
 
-      safeVal.textContent = safe.toFixed(2);
-      const prob = safe < 0 ? 0 : hits / M;
-      probVal.textContent = (100 * prob).toFixed(2) + '%';
-      const spacing = p.N === 1 ? 0 : 2 * p.a * Math.sin(Math.PI / p.N);
-      spacingVal.textContent = spacing.toFixed(2);
-      overlapVal.textContent = (p.N > 1 && safe > 0 && spacing < 2 * safe) ? 'Yes' : 'No';
+      updateStats(p, results);
     }
 
-    Object.values(controls).forEach(el => el.addEventListener('input', draw));
-    document.getElementById('runBtn').addEventListener('click', draw);
-    document.getElementById('resampleBtn').addEventListener('click', () => { sampleSeed = (sampleSeed + 12345) >>> 0; draw(); });
-    window.addEventListener('resize', draw);
-    draw();
+    Object.values(controls).forEach(el => {
+      el.addEventListener('input', () => drawScene(true));
+    });
+    runBtn.addEventListener('click', () => drawScene(true));
+    window.addEventListener('resize', () => drawScene(false));
+
+    drawScene(true);
   </script>
 </body>
 </html>
